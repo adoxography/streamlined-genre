@@ -15,7 +15,7 @@ setup(
     description='',
     license='MIT',
     keywords='nlp genre classification speech low-resource languages',
-    url='',
+    url='https://github.com/adoxography/streamlined-genre',
     install_requires=[
         'liac-arff==2.4.0',
         'librosa==0.7.2',
