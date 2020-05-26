@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+"""
+Command line interface into the streamlined-genre library
+"""
 import random
 import shutil
 from pathlib import Path

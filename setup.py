@@ -19,12 +19,18 @@ setup(
     install_requires=[
         'liac-arff==2.4.0',
         'librosa==0.7.2',
-        'matplotlib==3.2.1',
         'nlpaug==0.0.14',
         'numpy==1.18.4',
         'scipy==1.4.1',
         'sklearn==0.0'
     ],
+    extras_require={
+        'dev': [
+            'flake8',
+            'ipython',
+            'pylint'
+        ]
+    },
     long_description=read_file('README.md'),
     classifiers=[
         'Environment :: Console',
