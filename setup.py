@@ -13,7 +13,7 @@ setup(
     author='Graham Still',
     author_email='gstill@uw.edu',
     description='',
-    license='MIT',
+    license='GPL-3.0',
     keywords='nlp genre classification speech low-resource languages',
     url='https://github.com/adoxography/streamlined-genre',
     install_requires=[
