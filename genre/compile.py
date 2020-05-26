@@ -10,6 +10,7 @@ import random
 import subprocess
 from pathlib import Path
 from itertools import count
+from tempfile import TemporaryDirectory
 
 import librosa
 import soundfile as sf
@@ -17,9 +18,6 @@ from nlpaug.flow import Sometimes
 from nlpaug.augmenter.audio import MaskAug, VtlpAug, SpeedAug
 
 from genre.augment import BandpassAug
-
-# TODO: make platform independent
-AUGMENT_DIR = Path('/tmp/streamlined/augments')
 
 # TODO: extract
 EXE_OPENSMILE = Path('/opt/opensmile/bin/SMILExtract')
@@ -51,7 +49,7 @@ AUGMENTORS = {
 
 
 def compile_to_llds(source, llds_train, llds_test, labels_train, labels_test,
-                    tmp, num_augments, augments=None):
+                    num_augments, augments=None):
     """
     Compiles a directory of wav files into low level descriptors (LLDs) using
     openSMILE.
@@ -77,19 +75,20 @@ def compile_to_llds(source, llds_train, llds_test, labels_train, labels_test,
     random.shuffle(sample_paths)
 
     # TODO: Find a way to parallelize openSMILE
-    for i, path in enumerate(sample_paths):
-        if i < num_samples * 0.75:
-            # TODO: extract the ratio of input to test files
-            compile_file_to_llds_and_labels(path, llds_train, labels_train)
-            for _ in range(num_augments):
-                # TODO: Parallelize augmentation
-                file_data, _ = librosa.load(path)
-                augment_path = augment(augmentor, path, tmp, file_data,
-                                       index_iter)
-                compile_file_to_llds_and_labels(augment_path, llds_train,
-                                                labels_train)
-        else:
-            compile_file_to_llds_and_labels(path, llds_test, labels_test)
+    with TemporaryDirectory() as tmp:
+        for i, path in enumerate(sample_paths):
+            if i < num_samples * 0.75:
+                # TODO: extract the ratio of input to test files
+                compile_file_to_llds_and_labels(path, llds_train, labels_train)
+                for _ in range(num_augments):
+                    # TODO: Parallelize augmentation
+                    file_data, _ = librosa.load(path)
+                    augment_path = augment(augmentor, path, tmp, file_data,
+                                           index_iter)
+                    compile_file_to_llds_and_labels(augment_path, llds_train,
+                                                    labels_train)
+            else:
+                compile_file_to_llds_and_labels(path, llds_test, labels_test)
 
 
 def compile_to_bow(llds, labels, target, codebook, use_codebook=False,

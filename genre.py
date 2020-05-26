@@ -7,8 +7,6 @@ import shutil
 from pathlib import Path
 from argparse import ArgumentParser
 
-AUGMENT_DIR = Path('/tmp/streamlined/augments')
-
 parser = ArgumentParser(description='')
 
 action_group = parser.add_argument_group(
@@ -111,13 +109,10 @@ if __name__ == '__main__':
 
         from genre.compile import compile_to_llds
 
-        if AUGMENT_DIR.exists():
-            shutil.rmtree(AUGMENT_DIR)
-        AUGMENT_DIR.mkdir(parents=True)
         args.compiled.mkdir(exist_ok=True)
 
         compile_to_llds(args.wavs, llds_train, llds_test, labels_train,
-                        labels_test, AUGMENT_DIR, args.num_augments,
+                        labels_test, args.num_augments,
                         augments=args.augments)
 
     if args.x:
