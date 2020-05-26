@@ -82,7 +82,7 @@ def compile_to_bow(llds, labels, target, codebook, use_codebook=False,
         '-log'
     ]
 
-    process = subprocess.run(openxbow_call, capture_output=True)
+    process = subprocess.run(openxbow_call)
     process.check_returncode()
 
 
@@ -113,7 +113,7 @@ def extract_llds(source, dest, name):
         '-lldcsvoutput', dest,
         '-instname', name
     ]
-    process = subprocess.run(opensmile_call, capture_output=True)
+    process = subprocess.run(opensmile_call)
     process.check_returncode()
 
 
