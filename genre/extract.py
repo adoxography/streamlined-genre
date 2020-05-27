@@ -3,8 +3,8 @@ genre.extract
 
 Handles extraction of data from ELAR directories
 """
-import os
 import csv
+import subprocess
 import itertools
 
 # Locactions of each piece of data within the ELAR manifest
@@ -93,5 +93,11 @@ def convert_to_wav(orig, dest):
     :param orig: The path to the input to sound file
     :param dest: The path to where the WAV file should be saved
     """
-    # TODO: Use subprocess.run instead
-    os.system(f'sox "{orig}" -t wav -b 16 "{dest}"')
+    sox_call = [
+        'sox',
+        orig,
+        '-t', 'wav',
+        '-b', '16',
+        dest
+    ]
+    subprocess.run(sox_call, check=False)
