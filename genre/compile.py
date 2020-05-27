@@ -198,5 +198,5 @@ def augment(augmentor, path, dest_path, data, index_generator):
     _, label = path.stem.split('__')
     filename = dest_path / f'{next(index_generator)}__{label}.wav'
     augmented = augmentor.augment(data)
-    sf.write(path, augmented, SAMPLING_RATE)
+    sf.write(filename, augmented, SAMPLING_RATE)
     return filename
