@@ -16,4 +16,4 @@ def get_project_root():
 def ensure_download_exists(path, url):
     """ Downloads a file to `path` if `path` does not exist """
     if not path.exists():
-        wget.download(url, path)
+        wget.download(url, str(path))
