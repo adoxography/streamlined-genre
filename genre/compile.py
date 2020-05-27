@@ -7,8 +7,8 @@ Contains logic for extracting features from files:
  - From LLDs to BOWs using openXBOW
 """
 import random
+import shutil
 import subprocess
-from pathlib import Path
 from itertools import count
 from tempfile import TemporaryDirectory
 
@@ -20,8 +20,7 @@ from nlpaug.augmenter.audio import MaskAug, VtlpAug, SpeedAug
 from genre.augment import BandpassAug
 from genre.util import ensure_download_exists, get_project_root
 
-# TODO: extract
-EXE_OPENSMILE = Path('/opt/opensmile/bin/SMILExtract')
+OPENSMILE_EXE = 'SMILExtract'
 
 OPENSMILE_CONFIG = get_project_root() / 'config' / 'openSMILE' / 'ComParE_2016.conf'  # noqa
 
@@ -170,8 +169,11 @@ def extract_llds(source, dest, name):
     :param dest: The output LLDs
     :param name: The instance name of the file
     """
+    if not shutil.which(OPENSMILE_EXE):
+        raise RuntimeError(f'{OPENSMILE_EXE} is not on the PATH')
+
     opensmile_call = [
-        EXE_OPENSMILE,
+        OPENSMILE_EXE,
         *OPENSMILE_OPTIONS,
         '-inputfile', source,
         '-lldcsvoutput', dest,
