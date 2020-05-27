@@ -25,12 +25,12 @@ EXE_OPENSMILE = Path('/opt/opensmile/bin/SMILExtract')
 # TODO: extract
 OPENSMILE_CONFIG = Path('config/openSMILE/ComParE_2016.conf')
 
-OPENSMILE_OPTIONS = ' '.join([
-    f'-configfile {OPENSMILE_CONFIG}',
-    '-appendcsvlld 1',
-    '-timestampcsvlld 1',
-    '-headercsvlld 1'
-])
+OPENSMILE_OPTIONS = [
+    '-configfile', OPENSMILE_CONFIG,
+    '-appendcsvlld', '1',
+    '-timestampcsvlld', '1',
+    '-headercsvlld', '1'
+]
 
 # TODO: extract
 OPEN_XBOW_JAR = '/home2/gstill/genre/lib/openXBOW.jar'
@@ -169,8 +169,8 @@ def extract_llds(source, dest, name):
     :param name: The instance name of the file
     """
     opensmile_call = [
-        str(EXE_OPENSMILE),
-        OPENSMILE_OPTIONS,
+        EXE_OPENSMILE,
+        *OPENSMILE_OPTIONS,
         '-inputfile', source,
         '-lldcsvoutput', dest,
         '-instname', name
