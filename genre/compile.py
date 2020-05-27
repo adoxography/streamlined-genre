@@ -18,6 +18,7 @@ from nlpaug.flow import Sometimes
 from nlpaug.augmenter.audio import MaskAug, VtlpAug, SpeedAug
 
 from genre.augment import BandpassAug
+from genre.util import ensure_download_exists
 
 # TODO: extract
 EXE_OPENSMILE = Path('/opt/opensmile/bin/SMILExtract')
@@ -32,8 +33,8 @@ OPENSMILE_OPTIONS = [
     '-headercsvlld', '1'
 ]
 
-# TODO: extract
-OPEN_XBOW_JAR = '/home2/gstill/genre/lib/openXBOW.jar'
+OPEN_XBOW_JAR = get_project_root() / 'lib' / 'openXBOW.jar'
+OPEN_XBOW_URL = 'https://github.com/openXBOW/openXBOW/blob/master/openXBOW.jar?raw=true'  # noqa
 
 # openXBOW requires this sampling rate
 SAMPLING_RATE = 22050
@@ -107,6 +108,8 @@ def compile_to_bow(llds, labels, target, codebook, use_codebook=False,
                          altered.
     :param memory: The amount of memory to request for the JVM
     """
+    ensure_download_exists(OPEN_XBOW_JAR, OPEN_XBOW_URL)
+
     codebook_flag = '-b' if use_codebook else '-B'
 
     openxbow_call = [
