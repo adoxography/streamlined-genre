@@ -18,13 +18,12 @@ from nlpaug.flow import Sometimes
 from nlpaug.augmenter.audio import MaskAug, VtlpAug, SpeedAug
 
 from genre.augment import BandpassAug
-from genre.util import ensure_download_exists
+from genre.util import ensure_download_exists, get_project_root
 
 # TODO: extract
 EXE_OPENSMILE = Path('/opt/opensmile/bin/SMILExtract')
 
-# TODO: extract
-OPENSMILE_CONFIG = Path('config/openSMILE/ComParE_2016.conf')
+OPENSMILE_CONFIG = get_project_root() / 'config' / 'openSMILE' / 'ComParE_2016.conf'  # noqa
 
 OPENSMILE_OPTIONS = [
     '-configfile', OPENSMILE_CONFIG,
