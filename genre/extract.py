@@ -59,8 +59,12 @@ def process_source(source, dest, index_iter):
 
 def elar_manifest(path):
     """ Retrieves the path to the ELAR manifest """
-    # TODO: Throw an error if the manifest doesn't exist
-    return path / f'{path.stem}_ELAR_Directory.csv'
+    manifest_path = path / f'{path.stem}_ELAR_Directory.csv'
+
+    if not manifest_path.exists():
+        raise RuntimeError(f'{manifest_path} does not exist')
+
+    return manifest_path
 
 
 def extract_row_data(row):
