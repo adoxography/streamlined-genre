@@ -144,4 +144,7 @@ if __name__ == '__main__':
 
         from genre.classify import classify_bows
 
-        classify_bows(xbow_train, xbow_test)
+        train_acc, test_acc = classify_bows(xbow_train, xbow_test)
+
+        print('Train accuracy:', train_acc)
+        print('Test accuracy:', test_acc)

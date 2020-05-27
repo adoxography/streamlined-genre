@@ -14,6 +14,8 @@ def classify_bows(train_data, test_data):
 
     :param train_data: The path to the ARFF training data file
     :param test_data: The path to the ARFF test data file
+    :return: A tuple of floats, where the first element is the train accuracy
+             and the second is the test accuracy
     """
     inputs_train, targets_train = load_data(train_data)
     inputs_test, targets_test = load_data(test_data)
@@ -24,9 +26,7 @@ def classify_bows(train_data, test_data):
     train_accuracy = evaluate_classifier(clf, inputs_train, targets_train)
     test_accuracy = evaluate_classifier(clf, inputs_test, targets_test)
 
-    # TODO: remove `print` side effects
-    print('Train accuracy:', train_accuracy)
-    print('Test accuracy:', test_accuracy)
+    return train_accuracy, test_accuracy
 
 
 def load_data(filename):
