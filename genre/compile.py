@@ -10,6 +10,7 @@ import random
 import shutil
 import subprocess
 from itertools import count
+from pathlib import Path
 from tempfile import TemporaryDirectory
 
 import librosa
@@ -74,7 +75,8 @@ def compile_to_llds(source, llds_train, llds_test, labels_train, labels_test,
     random.shuffle(sample_paths)
 
     # TODO: Find a way to parallelize openSMILE
-    with TemporaryDirectory() as tmp:
+    with TemporaryDirectory() as tmp_dir_name:
+        tmp = Path(tmp_dir_name)
         for i, path in enumerate(sample_paths):
             if i < num_samples * 0.75:
                 # TODO: extract the ratio of input to test files
