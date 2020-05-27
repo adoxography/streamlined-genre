@@ -10,9 +10,6 @@ from nlpaug.augmenter.audio import AudioAugmenter
 from nlpaug.util import Action
 from scipy.signal import butter, sosfilt
 
-# TODO: Extract to a constant; unify with the one in compile.py
-SAMPLE_RATE = 22050
-
 
 class BandpassAug(AudioAugmenter):
     """
