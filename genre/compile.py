@@ -49,7 +49,7 @@ AUGMENTORS = {
 
 
 def compile_to_llds(source, llds_train, llds_test, labels_train, labels_test,
-                    num_augments, augments=None):
+                    num_augments, augments=None, train_percentage=0.75):
     """
     Compiles a directory of wav files into low level descriptors (LLDs) using
     openSMILE.
@@ -66,6 +66,8 @@ def compile_to_llds(source, llds_train, llds_test, labels_train, labels_test,
                          file
     :param augments: A list of augments to use. Should correspond to the keys
                      in `AUGMENTORS`. If None, will use all available augments.
+    :param train_percentage: The percentage of the wav files that should be
+                             used as training data
     """
     sample_paths = list(source.iterdir())
     num_samples = len(sample_paths)
@@ -78,8 +80,7 @@ def compile_to_llds(source, llds_train, llds_test, labels_train, labels_test,
     with TemporaryDirectory() as tmp_dir_name:
         tmp = Path(tmp_dir_name)
         for i, path in enumerate(sample_paths):
-            if i < num_samples * 0.75:
-                # TODO: extract the ratio of input to test files
+            if i < num_samples * train_percentage:
                 compile_file_to_llds_and_labels(path, llds_train, labels_train)
                 for _ in range(num_augments):
                     # TODO: Parallelize augmentation

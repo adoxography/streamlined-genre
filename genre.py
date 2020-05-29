@@ -62,6 +62,12 @@ extract_group.add_argument('-a', '--augments',
                            choices=['time_mask', 'freq_mask', 'warp', 'vtlp'],
                            help='The augments to randomly use. If this '
                                 'argument is ommitted, all will be used.')
+extract_group.add_argument('--train-percentage',
+                           default=0.75,
+                           type=float,
+                           help='The percentage of the input files (expressed '
+                                'as a number between 0 and 1) that should be '
+                                'used as training data')
 
 xbow_group = parser.add_argument_group('-x (xbow) options')
 xbow_group.add_argument('-m', '--memory',
