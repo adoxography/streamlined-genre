@@ -14,6 +14,10 @@
 
 ```pip install .```
 
+If you're developing `streamlined-genre`, you might want to install it with the optional dev dependencies instead:
+
+```pip install -e ".[dev]"```
+
 
 ## Usage
 
