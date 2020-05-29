@@ -10,6 +10,7 @@ import random
 import shutil
 import subprocess
 from itertools import count
+from multiprocessing import Pool
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -19,7 +20,7 @@ from nlpaug.flow import Sometimes
 from nlpaug.augmenter.audio import MaskAug, VtlpAug, SpeedAug
 
 from genre.augment import BandpassAug
-from genre.util import ensure_download_exists, get_project_root
+from genre.util import ensure_download_exists, split_list, get_project_root
 
 OPENSMILE_EXE = 'SMILExtract'
 
@@ -60,8 +61,6 @@ def compile_to_llds(source, llds_train, llds_test, labels_train, labels_test,
     :param llds_test: The path to the LLD test file
     :param labels_train: The path to the label train file
     :param labels_test: The path to the label test file
-    :param tmp: A directory to store augmented WAV files before their
-                conversion to LLDs
     :param num_augments: The number of augmented files to create per training
                          file
     :param augments: A list of augments to use. Should correspond to the keys
@@ -69,28 +68,69 @@ def compile_to_llds(source, llds_train, llds_test, labels_train, labels_test,
     :param train_percentage: The percentage of the wav files that should be
                              used as training data
     """
+    augmentor = augmentor_factory(augments)
+
+    with TemporaryDirectory() as tmp_dir_name:
+        tmp = Path(tmp_dir_name)
+        augment_args, smile_args = prepare_lld_tasks(
+            source, llds_train, llds_test, labels_train, labels_test, tmp,
+            num_augments, train_percentage, augmentor
+        )
+
+        with Pool() as pool:
+            pool.starmap(augment, augment_args)
+
+        for args in smile_args:
+            # TODO: Find a way to parallelize openSMILE
+            compile_file_to_llds_and_labels(*args)
+
+
+def prepare_lld_tasks(source, llds_train, llds_test, labels_train, labels_test,
+                      tmp, num_augments, train_percentage, augmentor):
+    """
+    Prepares the arguments for LLD creation functions
+
+    :param source: A directory containing WAV files
+    :param llds_train: The path to the LLD train file
+    :param llds_test: The path to the LLD test file
+    :param labels_train: The path to the label train file
+    :param labels_test: The path to the label test file
+    :param tmp: A directory to store augmented WAV files before their
+                conversion to LLDs
+    :param num_augments: The number of augmented files to create per training
+                         file
+    :param train_percentage: The percentage of the wav files that should be
+                             used as training data
+    :param augmentor: An augmentor object
+    :return: Two lists, the first of which is the augmentation arguments, and
+             the second of which is the openSMILE arguments
+    """
     sample_paths = list(source.iterdir())
+    train_samples, test_samples = split_list(sample_paths, train_percentage)
     num_samples = len(sample_paths)
     index_iter = count(num_samples)
-    augmentor = augmentor_factory(augments)
 
     random.shuffle(sample_paths)
 
-    # TODO: Find a way to parallelize openSMILE
-    with TemporaryDirectory() as tmp_dir_name:
-        tmp = Path(tmp_dir_name)
-        for i, path in enumerate(sample_paths):
-            if i < num_samples * train_percentage:
-                compile_file_to_llds_and_labels(path, llds_train, labels_train)
-                for _ in range(num_augments):
-                    # TODO: Parallelize augmentation
-                    file_data, _ = librosa.load(path)
-                    augment_path = augment(augmentor, path, tmp, file_data,
-                                           index_iter)
-                    compile_file_to_llds_and_labels(augment_path, llds_train,
-                                                    labels_train)
-            else:
-                compile_file_to_llds_and_labels(path, llds_test, labels_test)
+    augment_args = []
+    smile_args = []
+
+    for path in train_samples:
+        smile_args.append((path, llds_train, labels_train))
+        for _ in range(num_augments):
+            file_data, _ = librosa.load(path)
+
+            _, label = path.stem.split('__')
+            identifier = next(index_iter)
+            aug_file_path = tmp / f'{identifier}__{label}.wav'
+
+            augment_args.append((augmentor, aug_file_path, file_data))
+            smile_args.append((aug_file_path, llds_train, labels_train))
+
+    for path in test_samples:
+        smile_args.append((path, llds_test, labels_test))
+
+    return augment_args, smile_args
 
 
 def compile_to_bow(llds, labels, target, codebook, use_codebook=False,
@@ -185,19 +225,14 @@ def extract_llds(source, dest, name):
     subprocess.run(opensmile_call, check=True)
 
 
-def augment(augmentor, path, dest_path, data, index_generator):
+def augment(augmentor, file_path, data):
     """
     Creates an augmented version of a WAV file
 
     :param augmentor: An object that can augment WAV file data
-    :param path: The path to the original WAV file
-    :param dest_path: The path where the augmented file will be stored
+    :param file_path: The path where the augmented file will be stored
     :param data: The audio data to augment
-    :param index_generator: A generator for the augment's file name
-    :return: The name of the augmented file
+    :param identifier: A unique identifier for the file
     """
-    _, label = path.stem.split('__')
-    filename = dest_path / f'{next(index_generator)}__{label}.wav'
     augmented = augmentor.augment(data)
-    sf.write(filename, augmented, SAMPLING_RATE)
-    return filename
+    sf.write(file_path, augmented, SAMPLING_RATE)
