@@ -147,7 +147,7 @@ def store_augments(origin_path, augmentor, num_augments,
     :return: A list of file paths for the augments that were created
     :rtype: list
     """
-    audio_data = librosa.load(origin_path)
+    audio_data, _ = librosa.load(origin_path)
     augments = augmentor.augment(audio_data, n=num_augments)
 
     if num_augments == 1:
