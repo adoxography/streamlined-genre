@@ -233,5 +233,5 @@ def augment(augmentor, file_path, data):
     :param file_path: The path where the augmented file will be stored
     :param data: The audio data to augment
     """
-    augmented, _ = augmentor.augment(data)
+    augmented = augmentor.augment(data)
     sf.write(file_path, augmented, SAMPLING_RATE)
