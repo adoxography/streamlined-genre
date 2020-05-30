@@ -232,7 +232,6 @@ def augment(augmentor, file_path, data):
     :param augmentor: An object that can augment WAV file data
     :param file_path: The path where the augmented file will be stored
     :param data: The audio data to augment
-    :param identifier: A unique identifier for the file
     """
-    augmented = augmentor.augment(data)
+    augmented, _ = augmentor.augment(data)
     sf.write(file_path, augmented, SAMPLING_RATE)
