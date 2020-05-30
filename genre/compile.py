@@ -120,9 +120,10 @@ def prepare_lld_paths(source, tmp, num_augments, train_percentage, augmentor):
     train_augment_paths = []
 
     for path in train_samples:
-        augment_paths = store_augments(path, augmentor, num_augments,
-                                       index_iter, tmp)
-        train_augment_paths += augment_paths
+        if num_augments > 0:
+            augment_paths = store_augments(path, augmentor, num_augments,
+                                           index_iter, tmp)
+            train_augment_paths += augment_paths
 
     return train_samples + train_augment_paths, test_samples
 
@@ -148,6 +149,11 @@ def store_augments(origin_path, augmentor, num_augments,
     """
     audio_data = librosa.load(origin_path)
     augments = augmentor.augment(audio_data, n=num_augments)
+
+    if num_augments == 1:
+        # nlpaug.Augmenter doesn't return a list if n=1
+        augments = [augments]
+
     _, label = origin_path.stem.split('__')
     output_paths = []
 
