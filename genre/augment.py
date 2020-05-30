@@ -36,12 +36,26 @@ class BandpassAug(AudioAugmenter):
 
 
 def freq_to_mel(freq):
-    """ Converts a frequence in Hz to an approximation on the Mel spectrum """
+    """
+    Converts a frequence in Hz to an approximation on the Mel spectrum
+
+    :param freq: The frequency to convert
+    :type freq: float
+    :return: The approximated Mel spectrum equivalent
+    :rtype: float
+    """
     return 2595 * math.log10(1 + freq / 700)
 
 
 def mel_to_freq(mel):
-    """ Converts an approximation on the Mel spectrum to a frequency in Hz """
+    """
+    Converts an approximation on the Mel spectrum to a frequency in Hz
+
+    :param mel: The mel approximation to convert
+    :type mel: float
+    :return: The Hz equivalent
+    :rtype: float
+    """
     return 700 * (10 ** (mel / 2595) - 1)
 
 
@@ -58,11 +72,16 @@ def butter_bandstop(lowcut, highcut, sampling_rate, order=5):
     Generates a Butterworth bandstop filter
 
     :param lowcut: The low end of the bandstop
+    :type lowcut: float
     :param highcut: The high end of the bandstop
+    :type highcut: float
     :param sampling_rate: The sampling rate of the target WAV
+    :type sampling_rate: float
     :param order: How sharp the filter is; higher values mean crisper corners.
                   Equivalent to Q in audio engineering.
+    :type order: int
     :return: An audio filter corresponding to the bandstop filter
+    :rtype: numpy.array
     """
     nyquist_freq = 0.5 * sampling_rate
     low = lowcut / nyquist_freq

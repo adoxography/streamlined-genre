@@ -20,7 +20,9 @@ def extract_from_elar_dirs(sources, dest):
     See `process_source` for a definition of ELAR-format.
 
     :param sources: A list of directories to extract from
+    :type sources: list of Path
     :param dest: A directory to store all of the extracted sound files
+    :type dest: Path
     """
     num_samples = len(list(dest.iterdir()))
     index_iter = itertools.count(num_samples)
@@ -38,9 +40,12 @@ def process_source(source, dest, index_iter):
     called `Bundles`. The directory file should act as a reference to the files
     in `Bundles`.
 
-    :param sources: The ELAR-format directory
+    :param source: The ELAR-format directory
+    :type source: Path
     :param dest: A directory to store all of the extracted sound files
+    :type dest: Path
     :param index_iter: A generator that produces a unique key
+    :type index_iter: Iterable
     """
     with open(elar_manifest(source), encoding='utf-8-sig') as manifest:
         bundles_dir = source / 'Bundles'
@@ -58,7 +63,16 @@ def process_source(source, dest, index_iter):
 
 
 def elar_manifest(path):
-    """ Retrieves the path to the ELAR manifest """
+    """
+    Retrieves the path to the ELAR manifest
+
+    :param path: The path to the directory that should contain the manifest
+    :type path: Path
+    :return: The path to the ELAR manifest
+    :rtype: Path
+
+    :raises RuntimeError: The manifest does not exist or is not correctly named
+    """
     manifest_path = path / f'{path.stem}_ELAR_Directory.csv'
 
     if not manifest_path.exists():
@@ -68,7 +82,14 @@ def elar_manifest(path):
 
 
 def extract_row_data(row):
-    """ Extracts relevant data from an ELAR manifest """
+    """
+    Extracts relevant data from an ELAR manifest
+
+    :param row: The row to extract from
+    :type row: list
+    :return: The title, sound file name, and label from the row
+    :rtype: (str, str, str)
+    """
     title = row[TITLE_COL]
     wav = row[WAV_COL]
     label = extract_label(row)
@@ -76,7 +97,14 @@ def extract_row_data(row):
 
 
 def extract_label(row_data):
-    """ Extracts the label from a row of an ELAR manifest """
+    """
+    Extracts the label from a row of an ELAR manifest
+
+    :param row_data: The data from a single row of the manifest
+    :type row_data: list
+    :return: The label for the row
+    :rtype: str
+    """
     labels = row_data[LABEL_COL].replace('\xa0', ' ').split(' - ')
     label = labels[0]
     return label.replace(' ', '-')
@@ -86,6 +114,13 @@ def generate_filename(generator, label):
     """
     Generates a unique filename that includes a unique string and the file's
     label
+
+    :param generator: A generator that creates a unique name for the file
+    :type generator: Iterable
+    :param label: The label for the file
+    :type label: any
+    :return: A unique filename
+    :rtype: str
     """
     return f'{next(generator)}__{label}'
 
@@ -95,7 +130,9 @@ def convert_to_wav(orig, dest):
     Converts a sound file to a 16kbps WAV file
 
     :param orig: The path to the input to sound file
+    :type orig: Path
     :param dest: The path to where the WAV file should be saved
+    :type dest: Path
     """
     sox_call = [
         'sox',
