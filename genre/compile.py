@@ -79,11 +79,14 @@ def compile_to_llds(source, llds_train, llds_test, labels_train, labels_test,
 
     with TemporaryDirectory() as tmp_dir_name:
         tmp = Path(tmp_dir_name)
-        train_paths, test_paths = prepare_lld_paths(
+        train_paths, aug_paths, test_paths = prepare_lld_paths(
             source, tmp, num_augments, train_percentage, augmentor
         )
 
         for path in train_paths:
+            compile_file_to_llds_and_labels(path, llds_train, labels_train)
+
+        for path in aug_paths:
             compile_file_to_llds_and_labels(path, llds_train, labels_train)
 
         for path in test_paths:
@@ -107,8 +110,9 @@ def prepare_lld_paths(source, tmp, num_augments, train_percentage, augmentor):
     :type train_percentage: float
     :param augmentor: An augmentor object
     :type augmentor: Augmenter
-    :return: a list of openSMILE arguments
-    :rtype: list
+    :return: The paths for the base training samples, the augmented samples,
+             and the test samples
+    :rtype: (list, list, list)
     """
     sample_paths = list(source.iterdir())
     train_samples, test_samples = split_list(sample_paths, train_percentage)
@@ -125,7 +129,7 @@ def prepare_lld_paths(source, tmp, num_augments, train_percentage, augmentor):
                                            index_iter, tmp)
             train_augment_paths += augment_paths
 
-    return train_samples + train_augment_paths, test_samples
+    return train_samples, train_augment_paths, test_samples
 
 
 def store_augments(origin_path, augmentor, num_augments,
