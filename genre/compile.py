@@ -48,23 +48,15 @@ AUGMENTORS = {
 }
 
 
-def compile_to_llds(source, llds_train, llds_test, labels_train, labels_test,
-                    num_augments, augments=None, train_percentage=0.75):
+def compile_to_llds(file_system, num_augments, augments=None,
+                    train_percentage=0.75):
     """
     Compiles a directory of wav files into low level descriptors (LLDs) using
     openSMILE.
 
-    :param source: A directory containing WAV files. WAV files should be named
-                   {filename}__{label}.wav.
-    :type source: Path
-    :param llds_train: The path to the LLD train file
-    :type llds_train: Path
-    :param llds_test: The path to the LLD test file
-    :type llds_test: Path
-    :param labels_train: The path to the label train file
-    :type labels_train: Path
-    :param labels_test: The path to the label test file
-    :type labels_test: Path
+    :param file_system: An object containing the information about the host
+                        file system
+    :type file_system: genre.FileSystemConfig
     :param num_augments: The number of augmented files to create per training
                          file
     :type num_augments: int
@@ -80,17 +72,20 @@ def compile_to_llds(source, llds_train, llds_test, labels_train, labels_test,
     with TemporaryDirectory() as tmp_dir_name:
         tmp = Path(tmp_dir_name)
         train_paths, aug_paths, test_paths = prepare_lld_paths(
-            source, tmp, num_augments, train_percentage, augmentor
+            file_system.wavs, tmp, num_augments, train_percentage, augmentor
         )
 
         for path in train_paths:
-            compile_file_to_llds_and_labels(path, llds_train, labels_train)
+            compile_file_to_llds_and_labels(path, file_system.lld_train_file,
+                                            file_system.labels_train_file)
 
         for path in aug_paths:
-            compile_file_to_llds_and_labels(path, llds_train, labels_train)
+            compile_file_to_llds_and_labels(path, file_system.lld_train_file,
+                                            file_system.labels_train_file)
 
         for path in test_paths:
-            compile_file_to_llds_and_labels(path, llds_test, labels_test)
+            compile_file_to_llds_and_labels(path, file_system.lld_test_file,
+                                            file_system.labels_test_file)
 
 
 def prepare_lld_paths(source, tmp, num_augments, train_percentage, augmentor):

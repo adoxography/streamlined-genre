@@ -6,6 +6,9 @@ import random
 from pathlib import Path
 from argparse import ArgumentParser
 
+from genre.config import FileSystemConfig
+
+
 parser = ArgumentParser(description='')
 
 action_group = parser.add_argument_group(
@@ -79,21 +82,13 @@ if __name__ == '__main__':
     random.seed(440)
 
     args = parser.parse_args()
+    file_system = FileSystemConfig(sources=args.source, wavs=args.wavs,
+                                   compiled=args.compiled)
 
     if not any([args.t, args.e, args.x, args.c]):
         parser.error('At least one action (-t, -e, -x, -c) must be specified. '
                      'Run this command with -h for more information on '
                      'available actions.')
-
-    if args.compiled:
-        # Establish the path names for files in the `compiled` directory
-        llds_train = args.compiled / 'audio_llds_train.csv'
-        llds_test = args.compiled / 'audio_llds_test.csv'
-        labels_train = args.compiled / 'labels_train.csv'
-        labels_test = args.compiled / 'labels_test.csv'
-        xbow_train = args.compiled / 'xbow_train.arff'
-        xbow_test = args.compiled / 'xbow_test.arff'
-        codebook = args.compiled / 'codebook'
 
     if args.t:
         if len(args.source) == 0:
@@ -116,40 +111,45 @@ if __name__ == '__main__':
 
         args.compiled.mkdir(exist_ok=True)
 
-        compile_to_llds(args.wavs, llds_train, llds_test, labels_train,
-                        labels_test, args.num_augments,
+        compile_to_llds(args.wavs, file_system, args.num_augments,
                         augments=args.augments)
 
     if args.x:
         if args.compiled is None:
             parser.error('-x requires --compiled to be present')
-        if not llds_train.exists():
-            parser.error(f'-x requires {llds_train} to exist')
-        if not llds_test.exists():
-            parser.error(f'-x requires {llds_test} to exist')
-        if not labels_train.exists():
-            parser.error(f'-x requires {labels_train} to exist')
-        if not labels_test.exists():
-            parser.error(f'-x requires {labels_test} to exist')
+        if not file_system.lld_train_file.exists():
+            parser.error(f'-x requires {file_system.lld_train_file} to exist')
+        if not file_system.lld_test_file.exists():
+            parser.error(f'-x requires {file_system.lld_test_file} to exist')
+        if not file_system.labels_train_file.exists():
+            parser.error(
+                f'-x requires {file_system.labels_train_file} to exist')
+        if not file_system.labels_test_file.exists():
+            parser.error(
+                f'-x requires {file_system.labels_test_file} to exist')
 
         from genre.compile import compile_to_bow
 
-        compile_to_bow(llds_train, labels_train, xbow_train, codebook,
+        compile_to_bow(file_system.lld_train_file,
+                       file_system.labels_train_file,
+                       file_system.xbow_train_file, file_system.codebook_file,
                        memory=args.memory)
-        compile_to_bow(llds_test, labels_test, xbow_test, codebook,
+        compile_to_bow(file_system.lld_test_file, file_system.labels_test_file,
+                       file_system.xbow_test_file, file_system.codebook_file,
                        use_codebook=True, memory=args.memory)
 
     if args.c:
         if args.compiled is None:
             parser.error('-c requires --compiled to be present')
-        if not xbow_train.exists():
-            parser.error(f'-x requires {xbow_train} to exist')
-        if not xbow_test.exists():
-            parser.error(f'-x requires {xbow_test} to exist')
+        if not file_system.xbow_train_file.exists():
+            parser.error(f'-x requires {file_system.xbow_train_file} to exist')
+        if not file_system.xbow_test_file.exists():
+            parser.error(f'-x requires {file_system.xbow_test_file} to exist')
 
         from genre.classify import classify_bows
 
-        train_acc, test_acc = classify_bows(xbow_train, xbow_test)
+        train_acc, test_acc = classify_bows(file_system.xbow_train_file,
+                                            file_system.xbow_test_file)
 
         print('Train accuracy:', train_acc)
         print('Test accuracy:', test_acc)
