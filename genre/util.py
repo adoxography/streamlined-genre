@@ -11,11 +11,25 @@ from typing import Any, Callable, Iterable, List, Tuple
 import wget  # type: ignore
 
 
-def get_project_root() -> Path:
+def get_package_root() -> Path:
     """
     :return: the root directory of the project
     """
-    return Path(__file__).parent.parent
+    return Path(__file__).parent
+
+
+def get_config_dir() -> Path:
+    """
+    :return: The configuration directory
+    """
+    return get_package_root() / 'config'
+
+
+def get_lib_dir() -> Path:
+    """
+    :return: The library directory
+    """
+    return get_package_root() / 'lib'
 
 
 def ensure_download_exists(path: Path, url: str) -> None:
