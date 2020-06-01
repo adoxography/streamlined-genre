@@ -12,7 +12,7 @@ import subprocess
 from pathlib import Path
 from typing import Optional, Tuple
 
-from genre.util import ensure_download_exists, get_project_root
+from genre.util import ensure_download_exists, flatten, get_project_root
 
 OPENSMILE_EXE = 'SMILExtract'
 OPEN_XBOW_JAR = get_project_root() / 'lib' / 'openXBOW.jar'
@@ -39,11 +39,13 @@ def opensmile(source: Path, dest: Path, name: str,
 
     config_args = [] if config is None else ['-configfile', str(config)]
     options = options or {}
+    option_args = flatten([f'-{key}', str(value)]
+                          for key, value in options.items())
 
     args = [
         str(OPENSMILE_EXE),
         *config_args,
-        *[f'-{key} {value}' for key, value in options.items()],
+        *option_args,
         '-inputfile', str(source),
         '-lldcsvoutput', str(dest),
         '-instname', name

@@ -3,6 +3,7 @@ genre.util
 
 Utility functions for streamlined-genre
 """
+import itertools
 from math import ceil
 from pathlib import Path
 from typing import Any, Callable, Iterable, List, Tuple
@@ -57,3 +58,13 @@ def first(iterable: Iterable, key: Callable[[Any], bool]) -> Any:
         return next(x for x in iterable if key(x))
     except StopIteration:
         raise ValueError('No element matched')
+
+
+def flatten(iterable: Iterable) -> List:
+    """
+    flattens one layer of a nested iterable
+
+    :param iterable: The iterable to flatten
+    :return: A flattened version of the iterable
+    """
+    return list(itertools.chain(*iterable))
