@@ -4,8 +4,6 @@ genre.compile
 Contains logic for extracting LLD features from files
 """
 import random
-import shutil
-import subprocess
 from itertools import count
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -17,21 +15,18 @@ from nlpaug import Augmenter  # type: ignore
 from nlpaug.flow import Sometimes  # type: ignore
 from nlpaug.augmenter.audio import MaskAug, VtlpAug, SpeedAug  # type: ignore
 
-from genre.config import FileSystemConfig
 from genre.augment import BandpassAug
+from genre.config import FileSystemConfig
+from genre.services import opensmile
 from genre.util import split_list, get_project_root
 
-OPENSMILE_EXE = 'SMILExtract'
-
-OPENSMILE_CONFIG = get_project_root() / 'config' / 'openSMILE' / 'ComParE_2016.conf'  # noqa
-
-OPENSMILE_OPTIONS = [
-    '-configfile', OPENSMILE_CONFIG,
-    '-appendcsvlld', '1',
-    '-timestampcsvlld', '1',
-    '-headercsvlld', '1'
-]
-
+OPENSMILE_CONFIG_DIR = get_project_root() / 'config' / 'openSMILE'
+COMPARE_CONFIG = OPENSMILE_CONFIG_DIR / 'ComParE_2016.conf'
+COMPARE_OPTIONS = {
+    'appendcsvlld': 1,
+    'timestampcsvlld': 1,
+    'headercsvlld': 1
+}
 
 # openXBOW requires this sampling rate
 SAMPLING_RATE = 22050
@@ -181,7 +176,8 @@ def compile_file_to_llds_and_labels(input_path: Path,
     name, label = input_path.stem.split('__')
 
     record_label(name, label, label_path)
-    extract_llds(input_path, lld_path, name)
+    opensmile(input_path, lld_path, name,
+              config=COMPARE_CONFIG, options=COMPARE_OPTIONS)
 
 
 def record_label(name: Any, label: Any, label_path: Path) -> None:
@@ -194,26 +190,3 @@ def record_label(name: Any, label: Any, label_path: Path) -> None:
     """
     with open(label_path, 'a') as label_file:
         label_file.write(f'{name};{label}\n')
-
-
-def extract_llds(source: Path, dest: Path, name: str):
-    """
-    Extracts the low-level descriptors (LLDs) from a WAV file
-
-    :param source: The source WAV file
-    :param dest: The output LLDs
-    :param name: The instance name of the file
-
-    :raises RuntimeError: The openSMILE executable is not available on the PATH
-    """
-    if not shutil.which(OPENSMILE_EXE):
-        raise RuntimeError(f'{OPENSMILE_EXE} is not on the PATH')
-
-    opensmile_call = [
-        str(OPENSMILE_EXE),
-        *map(str, OPENSMILE_OPTIONS),
-        '-inputfile', str(source),
-        '-lldcsvoutput', str(dest),
-        '-instname', name
-    ]
-    subprocess.run(opensmile_call, check=True)
