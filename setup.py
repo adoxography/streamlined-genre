@@ -30,6 +30,10 @@ EXTRAS = {
     ]
 }
 
+SCRIPTS = [
+    'bin/streamlined-genre'
+]
+
 here = os.path.abspath(os.path.dirname(__file__))
 
 with io.open(os.path.join(here, 'README.md'), encoding='utf-8') as readme_file:
@@ -45,6 +49,7 @@ setup(
     version=version,
     author=AUTHOR,
     author_email=EMAIL,
+    scripts=SCRIPTS,
     description=DESCRIPTION,
     python_requires=REQUIRES_PYTHON,
     packages=find_packages(),

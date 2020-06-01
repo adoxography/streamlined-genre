@@ -43,7 +43,7 @@ For each instance, `{LANGUAGE}_ELAR_Directory.csv` should contain a row where {R
 
 ### Command line executable
 
-The main `streamlined-genre` executable is `cli`. It requires at least one action flag:
+Once installed, the executable `streamlined-genre` is available on the command line. It requires at least one action flag:
 
 Flag | Action                                      | Requires
 ---- | ------------------------------------------- | ------------------------------------
@@ -54,7 +54,7 @@ Flag | Action                                      | Requires
 
 Action flags may be combined; e.g. `-texc`.
 
-For a full description of command line arguments, run `./cli --help`.
+For a full description of command line arguments, run `streamlined-genre --help`.
 
 
 ## License
