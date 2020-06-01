@@ -34,7 +34,7 @@ SAMPLING_RATE = 22050
 TRAIN_MODE = 'train'
 TEST_MODE = 'test'
 
-# Available augmentors, along with their string keys
+# Available augmenters, along with their string keys
 AUGMENTORS = {
     'time_mask': MaskAug(sampling_rate=SAMPLING_RATE, mask_with_noise=False,
                          coverage=.1),
@@ -60,12 +60,12 @@ def compile_to_llds(file_system: FileSystemConfig, num_augments: int,
     :param train_percentage: The percentage of the wav files that should be
                              used as training data
     """
-    augmentor = augmentor_factory(augments)
+    augmenter = augmenter_factory(augments)
 
     with TemporaryDirectory() as tmp_dir_name:
         tmp = Path(tmp_dir_name)
         train_paths, aug_paths, test_paths = prepare_lld_paths(
-            file_system.wav_dir, tmp, num_augments, train_percentage, augmentor
+            file_system.wav_dir, tmp, num_augments, train_percentage, augmenter
         )
 
         train_output_paths = file_system.new_lld_label_training_pair()
@@ -84,7 +84,7 @@ def compile_to_llds(file_system: FileSystemConfig, num_augments: int,
 
 def prepare_lld_paths(source: Path, tmp: Path, num_augments: int,
                       train_percentage: float,
-                      augmentor: Augmenter) -> Tuple[List, List, List]:
+                      augmenter: Augmenter) -> Tuple[List, List, List]:
     """
     Prepares the arguments for LLD creation functions
 
@@ -95,7 +95,7 @@ def prepare_lld_paths(source: Path, tmp: Path, num_augments: int,
                          file
     :param train_percentage: The percentage of the wav files that should be
                              used as training data
-    :param augmentor: An augmentor object
+    :param augmenter: An augmenter object
     :return: The paths for the base training samples, the augmented samples,
              and the test samples
     """
@@ -110,20 +110,20 @@ def prepare_lld_paths(source: Path, tmp: Path, num_augments: int,
 
     for path in train_samples:
         if num_augments > 0:
-            augment_paths = store_augments(path, augmentor, num_augments,
+            augment_paths = store_augments(path, augmenter, num_augments,
                                            index_iter, tmp)
             train_augment_paths += augment_paths
 
     return train_samples, train_augment_paths, test_samples
 
 
-def store_augments(origin_path: Path, augmentor: Augmenter, num_augments: int,
+def store_augments(origin_path: Path, augmenter: Augmenter, num_augments: int,
                    ident_generator: Iterator, output_dir: Path) -> List[Path]:
     """
     Stores augmented versions of a WAV file in the filesystem
 
     :param origin_path: the path to the original WAV file
-    :param augmentor: An augmentor object
+    :param augmenter: An augmenter object
     :param num_augments: The number of augmented files to create
     :param ident_generator: A generator object that creates unique identifiers
                             for the file name
@@ -131,7 +131,7 @@ def store_augments(origin_path: Path, augmentor: Augmenter, num_augments: int,
     :return: A list of file paths for the augments that were created
     """
     audio_data, _ = librosa.load(origin_path)
-    augments = augmentor.augment(audio_data, n=num_augments)
+    augments = augmenter.augment(audio_data, n=num_augments)
 
     if num_augments == 1:
         # nlpaug.Augmenter doesn't return a list if n=1
@@ -149,23 +149,23 @@ def store_augments(origin_path: Path, augmentor: Augmenter, num_augments: int,
     return output_paths
 
 
-def augmentor_factory(keywords: Optional[List[str]] = None) -> Augmenter:
+def augmenter_factory(keywords: Optional[List[str]] = None) -> Augmenter:
     """
-    Generates an augmentor based on a list of keywords
+    Generates an augmenter based on a list of keywords
 
-    If the `keywords` is None, all available augmentors will be used.
+    If the `keywords` is None, all available augmenters will be used.
 
-    :param keywords: The keywords corresponding to the augmentors that should
+    :param keywords: The keywords corresponding to the augmenters that should
                      be used
     :type keywords: list or None
-    :return: An augmentor pipeline that randomly uses the specified augmentors
+    :return: An augmenter pipeline that randomly uses the specified augmenters
     :rtype: Augmenter
     """
     if keywords is None:
-        augmentors = list(AUGMENTORS.values())
+        augmenters = list(AUGMENTORS.values())
     else:
-        augmentors = [AUGMENTORS[key] for key in keywords]
-    return Sometimes(augmentors)
+        augmenters = [AUGMENTORS[key] for key in keywords]
+    return Sometimes(augmenters)
 
 
 def compile_file_to_llds_and_labels(input_path: Path,
