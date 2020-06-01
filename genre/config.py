@@ -100,8 +100,10 @@ class FileSystemConfig:
 
         :raises ValueError: The files are not valid
         """
-        if not self.lld_test_file.exists() or self.labels_test_file.exists():
-            raise ValueError('There are no LLD and/or label files')
+        if not self.lld_test_file.exists():
+            raise ValueError(f'{self.lld_test_file} does not exist')
+        if not self.labels_test_file.exists():
+            raise ValueError(f'{self.labels_test_file} does not exist')
 
     @property
     def lld_train_files(self) -> List[Path]:
