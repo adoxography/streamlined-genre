@@ -2,7 +2,7 @@
 
 ## Installation
 
-0. Ensure that [`python`](https://python.org) (>=3.6) and [`openSMILE`](https://www.audeering.com/opensmile/) are installed. `SMILExtract` should be available on the `PATH`.
+0. Ensure that [`python`](https://python.org) (>=3.6), Java, and [`openSMILE`](https://www.audeering.com/opensmile/) are installed. `python3`, `java`, and `SMILExtract` should be available on the `PATH`.
 
 1. Ensure that `pip`, `wheel`, and `setuptools` are installed and up-to-date
 
