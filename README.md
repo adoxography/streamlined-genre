@@ -26,7 +26,7 @@ If you're developing `streamlined-genre`, you might want to install it with the 
 ### Data preparation
 
 #### ELAR
-`streamlined-genre` is designed to work with directories generated from [Endangered Languages Archive](https://www.soas.ac.uk/elar/) (ELAR) content. The directories should be constructed as follows:
+`streamlined-genre` is designed to work with directories generated from [Endangered Languages Archive](https://elar.soas.ac.uk) (ELAR) content. The directories should be constructed as follows:
 
 ```
 {LANGUAGE}
