@@ -111,8 +111,7 @@ if __name__ == '__main__':
 
         args.compiled.mkdir(exist_ok=True)
 
-        compile_to_llds(args.wavs, file_system, args.num_augments,
-                        augments=args.augments)
+        compile_to_llds(file_system, args.num_augments, args.augments)
 
     if args.x:
         if args.compiled is None:
