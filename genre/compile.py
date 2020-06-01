@@ -64,19 +64,17 @@ def compile_to_llds(file_system: FileSystemConfig, num_augments: int,
 
     with TemporaryDirectory() as tmp_dir_name:
         tmp = Path(tmp_dir_name)
-        train_paths, aug_paths, test_paths = prepare_lld_paths(
+        *all_train_paths, test_paths = prepare_lld_paths(
             file_system.wav_dir, tmp, num_augments, train_percentage, augmenter
         )
 
-        train_output_paths = file_system.new_lld_label_training_pair()
         test_output_paths = (file_system.lld_test_file,
                              file_system.labels_test_file)
 
-        for path in train_paths:
-            compile_file_to_llds_and_labels(path, train_output_paths)
-
-        for path in aug_paths:
-            compile_file_to_llds_and_labels(path, train_output_paths)
+        for paths in all_train_paths:
+            output_paths = file_system.new_lld_label_training_pair()
+            for path in paths:
+                compile_file_to_llds_and_labels(path, output_paths)
 
         for path in test_paths:
             compile_file_to_llds_and_labels(path, test_output_paths)
@@ -84,7 +82,7 @@ def compile_to_llds(file_system: FileSystemConfig, num_augments: int,
 
 def prepare_lld_paths(source: Path, tmp: Path, num_augments: int,
                       train_percentage: float,
-                      augmenter: Augmenter) -> Tuple[List, List, List]:
+                      augmenter: Augmenter) -> List[List[Path]]:
     """
     Prepares the arguments for LLD creation functions
 
@@ -96,25 +94,27 @@ def prepare_lld_paths(source: Path, tmp: Path, num_augments: int,
     :param train_percentage: The percentage of the wav files that should be
                              used as training data
     :param augmenter: An augmenter object
-    :return: The paths for the base training samples, the augmented samples,
-             and the test samples
+    :return: A list of lists of paths to WAV files for LLD creation. The last
+             member is the test group.
     """
     sample_paths = list(source.iterdir())
+    random.shuffle(sample_paths)
+
     train_samples, test_samples = split_list(sample_paths, train_percentage)
     num_samples = len(sample_paths)
     index_iter = count(num_samples)
 
-    random.shuffle(sample_paths)
-
-    train_augment_paths = []
+    train_augment_paths: List[List[Path]] = [[] for _ in train_samples]
 
     for path in train_samples:
         if num_augments > 0:
             augment_paths = store_augments(path, augmenter, num_augments,
                                            index_iter, tmp)
-            train_augment_paths += augment_paths
 
-    return train_samples, train_augment_paths, test_samples
+            for i, augment_path in enumerate(augment_paths):
+                train_augment_paths[i].append(augment_path)
+
+    return [train_samples, *train_augment_paths, test_samples]
 
 
 def store_augments(origin_path: Path, augmenter: Augmenter, num_augments: int,
