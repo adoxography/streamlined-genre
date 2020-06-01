@@ -25,6 +25,7 @@ EXTRAS = {
     'dev': [
         'flake8',
         'ipython',
+        'mypy',
         'pylint'
     ]
 }

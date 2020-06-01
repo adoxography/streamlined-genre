@@ -12,12 +12,15 @@ import subprocess
 from itertools import count
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import Any, Iterator, List, Optional, Tuple
 
-import librosa
-import soundfile as sf
-from nlpaug.flow import Sometimes
-from nlpaug.augmenter.audio import MaskAug, VtlpAug, SpeedAug
+import librosa  # type: ignore
+import soundfile as sf  # type: ignore
+from nlpaug import Augmenter  # type: ignore
+from nlpaug.flow import Sometimes  # type: ignore
+from nlpaug.augmenter.audio import MaskAug, VtlpAug, SpeedAug  # type: ignore
 
+from genre.config import FileSystemConfig
 from genre.augment import BandpassAug
 from genre.util import ensure_download_exists, split_list, get_project_root
 
@@ -48,31 +51,28 @@ AUGMENTORS = {
 }
 
 
-def compile_to_llds(file_system, num_augments, augments=None,
-                    train_percentage=0.75):
+def compile_to_llds(file_system: FileSystemConfig, num_augments: int,
+                    augments: List[str] = None,
+                    train_percentage: float = 0.75) -> None:
     """
     Compiles a directory of wav files into low level descriptors (LLDs) using
     openSMILE.
 
     :param file_system: An object containing the information about the host
                         file system
-    :type file_system: genre.FileSystemConfig
     :param num_augments: The number of augmented files to create per training
                          file
-    :type num_augments: int
     :param augments: A list of augments to use. Should correspond to the keys
                      in `AUGMENTORS`. If None, will use all available augments.
-    :type augments: list
     :param train_percentage: The percentage of the wav files that should be
                              used as training data
-    :type train_percentage: float
     """
     augmentor = augmentor_factory(augments)
 
     with TemporaryDirectory() as tmp_dir_name:
         tmp = Path(tmp_dir_name)
         train_paths, aug_paths, test_paths = prepare_lld_paths(
-            file_system.wavs, tmp, num_augments, train_percentage, augmentor
+            file_system.wav_dir, tmp, num_augments, train_percentage, augmentor
         )
 
         for path in train_paths:
@@ -88,26 +88,22 @@ def compile_to_llds(file_system, num_augments, augments=None,
                                             file_system.labels_test_file)
 
 
-def prepare_lld_paths(source, tmp, num_augments, train_percentage, augmentor):
+def prepare_lld_paths(source: Path, tmp: Path, num_augments: int,
+                      train_percentage: float,
+                      augmentor: Augmenter) -> Tuple[List, List, List]:
     """
     Prepares the arguments for LLD creation functions
 
     :param source: A directory containing WAV files
-    :type source: Path
     :param tmp: A directory to store augmented WAV files before their
                 conversion to LLDs
-    :type tmp: Path
     :param num_augments: The number of augmented files to create per training
                          file
-    :type num_augments: int
     :param train_percentage: The percentage of the wav files that should be
                              used as training data
-    :type train_percentage: float
     :param augmentor: An augmentor object
-    :type augmentor: Augmenter
     :return: The paths for the base training samples, the augmented samples,
              and the test samples
-    :rtype: (list, list, list)
     """
     sample_paths = list(source.iterdir())
     train_samples, test_samples = split_list(sample_paths, train_percentage)
@@ -127,24 +123,18 @@ def prepare_lld_paths(source, tmp, num_augments, train_percentage, augmentor):
     return train_samples, train_augment_paths, test_samples
 
 
-def store_augments(origin_path, augmentor, num_augments,
-                   ident_generator, output_dir):
+def store_augments(origin_path: Path, augmentor: Augmenter, num_augments: int,
+                   ident_generator: Iterator, output_dir: Path) -> List[Path]:
     """
     Stores augmented versions of a WAV file in the filesystem
 
     :param origin_path: the path to the original WAV file
-    :type origin_path: Path
     :param augmentor: An augmentor object
-    :type augmentor: Augmenter
     :param num_augments: The number of augmented files to create
-    :type num_augments: int
     :param ident_generator: A generator object that creates unique identifiers
                             for the file name
-    :type ident_generator: Iterable
     :param output_dir: The directory to store the augmented files
-    :type output_dir: Path
     :return: A list of file paths for the augments that were created
-    :rtype: list
     """
     audio_data, _ = librosa.load(origin_path)
     augments = augmentor.augment(audio_data, n=num_augments)
@@ -165,27 +155,21 @@ def store_augments(origin_path, augmentor, num_augments,
     return output_paths
 
 
-def compile_to_bow(llds, labels, target, codebook, use_codebook=False,
-                   memory='12G'):
+def compile_to_bow(llds: Path, labels: Path, target: Path, codebook: Path,
+                   use_codebook: bool = False, memory: str = '12G') -> None:
     """
     Compiles a file of LLDS and their corresponding labels into a bag of words
     using openXBOW.
 
     :param llds: The path to the LLD file
-    :type llds: Path
     :param labels: The path to the labels file
-    :type labels: Path
     :param target: The location where the bag of words should be saved
-    :type target: Path
     :param codebook: The location of the bag of words codebook
-    :type codebook: Path
     :param use_codebook: If True, `codebook` should already exist and will be
                          used as a reference (i.e. will not be altered). If
                          False, `codebook` does not have to exist and will be
                          altered.
-    :type use_codebook: bool, optional
     :param memory: The amount of memory to request for the JVM
-    :type memory: str, optional
     """
     ensure_download_exists(OPEN_XBOW_JAR, OPEN_XBOW_URL)
 
@@ -194,11 +178,11 @@ def compile_to_bow(llds, labels, target, codebook, use_codebook=False,
     openxbow_call = [
         'java',
         f'-Xmx{memory}',
-        '-jar', OPEN_XBOW_JAR,
-        '-i', llds,
-        '-o', target,
-        '-l', labels,
-        codebook_flag, codebook,
+        '-jar', str(OPEN_XBOW_JAR),
+        '-i', str(llds),
+        '-o', str(target),
+        '-l', str(labels),
+        codebook_flag, str(codebook),
         '' if use_codebook else '-standardizeInput',
         '-log'
     ]
@@ -206,7 +190,7 @@ def compile_to_bow(llds, labels, target, codebook, use_codebook=False,
     subprocess.run(openxbow_call, check=True)
 
 
-def augmentor_factory(keywords=None):
+def augmentor_factory(keywords: Optional[List[str]] = None) -> Augmenter:
     """
     Generates an augmentor based on a list of keywords
 
@@ -225,45 +209,37 @@ def augmentor_factory(keywords=None):
     return Sometimes(augmentors)
 
 
-def compile_file_to_llds_and_labels(path, lld_file, label_file):
+def compile_file_to_llds_and_labels(path: Path, lld_file: Path,
+                                    label_file: Path) -> None:
     """
     :param path: The path to the original file
-    :type path: Path
     :param lld_file: The path to the output LLD file
-    :type lld_file: Path
     :param label_file: The path to the label_file
-    :type label_file: Path
     """
     name, label = path.stem.split('__')
     record_label(name, label, label_file)
     extract_llds(path, lld_file, name)
 
 
-def record_label(name, label, label_path):
+def record_label(name: Any, label: Any, label_path: Path) -> None:
     """
     Records the label of the file in another file
 
     :param name: The name (identifier) of the file
-    :type name: any
     :param label: The classification label of the file
-    :type label: str
     :param label_path: The file to store the labels
-    :type label_path: Path
     """
     with open(label_path, 'a') as label_file:
         label_file.write(f'{name};{label}\n')
 
 
-def extract_llds(source, dest, name):
+def extract_llds(source: Path, dest: Path, name: str):
     """
     Extracts the low-level descriptors (LLDs) from a WAV file
 
     :param source: The source WAV file
-    :type source: Path
     :param dest: The output LLDs
-    :type dest: Path
     :param name: The instance name of the file
-    :type name: str
 
     :raises RuntimeError: The openSMILE executable is not available on the PATH
     """
@@ -271,10 +247,10 @@ def extract_llds(source, dest, name):
         raise RuntimeError(f'{OPENSMILE_EXE} is not on the PATH')
 
     opensmile_call = [
-        OPENSMILE_EXE,
-        *OPENSMILE_OPTIONS,
-        '-inputfile', source,
-        '-lldcsvoutput', dest,
+        str(OPENSMILE_EXE),
+        *map(str, OPENSMILE_OPTIONS),
+        '-inputfile', str(source),
+        '-lldcsvoutput', str(dest),
         '-instname', name
     ]
     subprocess.run(opensmile_call, check=True)

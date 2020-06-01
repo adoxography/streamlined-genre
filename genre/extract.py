@@ -6,6 +6,8 @@ Handles extraction of data from ELAR directories
 import csv
 import subprocess
 import itertools
+from typing import Any, Iterator, List, Tuple
+from pathlib import Path
 
 # Locactions of each piece of data within the ELAR manifest
 TITLE_COL = 0
@@ -13,16 +15,14 @@ WAV_COL = 2
 LABEL_COL = 4
 
 
-def extract_from_elar_dirs(sources, dest):
+def extract_from_elar_dirs(sources: List[Path], dest: Path) -> None:
     """
     Extracts all of the sound files from ELAR-format directories
 
     See `process_source` for a definition of ELAR-format.
 
     :param sources: A list of directories to extract from
-    :type sources: list of Path
     :param dest: A directory to store all of the extracted sound files
-    :type dest: Path
     """
     num_samples = len(list(dest.iterdir()))
     index_iter = itertools.count(num_samples)
@@ -31,7 +31,7 @@ def extract_from_elar_dirs(sources, dest):
         process_source(source, dest, index_iter)
 
 
-def process_source(source, dest, index_iter):
+def process_source(source: Path, dest: Path, index_iter: Iterator) -> None:
     """
     Extracts all of the sound files from an ELAR-format directory
 
@@ -41,11 +41,8 @@ def process_source(source, dest, index_iter):
     in `Bundles`.
 
     :param source: The ELAR-format directory
-    :type source: Path
     :param dest: A directory to store all of the extracted sound files
-    :type dest: Path
     :param index_iter: A generator that produces a unique key
-    :type index_iter: Iterable
     """
     with open(elar_manifest(source), encoding='utf-8-sig') as manifest:
         bundles_dir = source / 'Bundles'
@@ -62,14 +59,12 @@ def process_source(source, dest, index_iter):
             convert_to_wav(sph_loc, dest_wav_loc)
 
 
-def elar_manifest(path):
+def elar_manifest(path: Path) -> Path:
     """
     Retrieves the path to the ELAR manifest
 
     :param path: The path to the directory that should contain the manifest
-    :type path: Path
     :return: The path to the ELAR manifest
-    :rtype: Path
 
     :raises RuntimeError: The manifest does not exist or is not correctly named
     """
@@ -81,14 +76,12 @@ def elar_manifest(path):
     return manifest_path
 
 
-def extract_row_data(row):
+def extract_row_data(row: List[str]) -> Tuple[str, str, str]:
     """
     Extracts relevant data from an ELAR manifest
 
     :param row: The row to extract from
-    :type row: list
     :return: The title, sound file name, and label from the row
-    :rtype: (str, str, str)
     """
     title = row[TITLE_COL]
     wav = row[WAV_COL]
@@ -96,49 +89,42 @@ def extract_row_data(row):
     return title, wav, label
 
 
-def extract_label(row_data):
+def extract_label(row_data: List[str]) -> str:
     """
     Extracts the label from a row of an ELAR manifest
 
     :param row_data: The data from a single row of the manifest
-    :type row_data: list
     :return: The label for the row
-    :rtype: str
     """
     labels = row_data[LABEL_COL].replace('\xa0', ' ').split(' - ')
     label = labels[0]
     return label.replace(' ', '-')
 
 
-def generate_filename(generator, label):
+def generate_filename(generator: Iterator, label: Any) -> str:
     """
     Generates a unique filename that includes a unique string and the file's
     label
 
     :param generator: A generator that creates a unique name for the file
-    :type generator: Iterable
     :param label: The label for the file
-    :type label: any
     :return: A unique filename
-    :rtype: str
     """
     return f'{next(generator)}__{label}'
 
 
-def convert_to_wav(orig, dest):
+def convert_to_wav(orig: Path, dest: Path) -> None:
     """
     Converts a sound file to a 16kbps WAV file
 
     :param orig: The path to the input to sound file
-    :type orig: Path
     :param dest: The path to where the WAV file should be saved
-    :type dest: Path
     """
-    sox_call = [
+    sox_call: List[str] = [
         'sox',
-        orig,
+        str(orig),
         '-t', 'wav',
         '-b', '16',
-        dest
+        str(dest)
     ]
     subprocess.run(sox_call, check=False)

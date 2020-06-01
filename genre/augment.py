@@ -5,23 +5,24 @@ Addon library to nlpaug; adds a frequency filter
 """
 import math
 import random
+from typing import Sequence
 
-from nlpaug.augmenter.audio import AudioAugmenter
-from nlpaug.util import Action
-from scipy.signal import butter, sosfilt
+from nlpaug.augmenter.audio import AudioAugmenter  # type: ignore
+from nlpaug.util import Action  # type: ignore
+from scipy.signal import butter, sosfilt  # type: ignore
 
 
 class BandpassAug(AudioAugmenter):
     """
     AudioAugmenter that masks frequency ranges
     """
-    def __init__(self, sampling_rate=None, span=200, name='BandpassAug',
-                 verbose=0):
+    def __init__(self, sampling_rate: float, span: float = 200,
+                 name: str = 'BandpassAug', verbose: int = 0):
         self.sampling_rate = sampling_rate
         self.span = span
         super().__init__(name=name, action=Action.SUBSTITUTE, verbose=verbose)
 
-    def substitute(self, data):
+    def substitute(self, data: Sequence) -> Sequence:
         max_filter = freq_to_mel(self.sampling_rate * 0.5)
 
         pass_start_mel = random.random() * (max_filter - self.span)
@@ -35,31 +36,28 @@ class BandpassAug(AudioAugmenter):
             self.sampling_rate, order=81)
 
 
-def freq_to_mel(freq):
+def freq_to_mel(freq: float) -> float:
     """
     Converts a frequence in Hz to an approximation on the Mel spectrum
 
     :param freq: The frequency to convert
-    :type freq: float
     :return: The approximated Mel spectrum equivalent
-    :rtype: float
     """
     return 2595 * math.log10(1 + freq / 700)
 
 
-def mel_to_freq(mel):
+def mel_to_freq(mel: float) -> float:
     """
     Converts an approximation on the Mel spectrum to a frequency in Hz
 
     :param mel: The mel approximation to convert
-    :type mel: float
     :return: The Hz equivalent
-    :rtype: float
     """
     return 700 * (10 ** (mel / 2595) - 1)
 
 
-def butter_bandstop_filter(data, lowcut, highcut, sampling_rate, order=5):
+def butter_bandstop_filter(data: Sequence, lowcut: float, highcut: float,
+                           sampling_rate: float, order: int = 5):
     """
     See https://stackoverflow.com/questions/12093594/how-to-implement-band-pass-butterworth-filter-with-scipy-signal-butter/12233959#12233959  # noqa
     """
@@ -67,21 +65,17 @@ def butter_bandstop_filter(data, lowcut, highcut, sampling_rate, order=5):
     return sosfilt(sos, data)
 
 
-def butter_bandstop(lowcut, highcut, sampling_rate, order=5):
+def butter_bandstop(lowcut: float, highcut: float, sampling_rate: float,
+                    order: int = 5) -> Sequence:
     """
     Generates a Butterworth bandstop filter
 
     :param lowcut: The low end of the bandstop
-    :type lowcut: float
     :param highcut: The high end of the bandstop
-    :type highcut: float
     :param sampling_rate: The sampling rate of the target WAV
-    :type sampling_rate: float
     :param order: How sharp the filter is; higher values mean crisper corners.
                   Equivalent to Q in audio engineering.
-    :type order: int
     :return: An audio filter corresponding to the bandstop filter
-    :rtype: numpy.array
     """
     nyquist_freq = 0.5 * sampling_rate
     low = lowcut / nyquist_freq

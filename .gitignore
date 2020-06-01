@@ -16,6 +16,9 @@ dist/
 profile_default/
 ipython_config.py
 
+# mypy
+.mypy_cache/
+
 # Environments
 .env
 .venv
