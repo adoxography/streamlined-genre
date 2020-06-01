@@ -75,13 +75,13 @@ def compile_to_llds(file_system: FileSystemConfig, num_augments: int,
             file_system.wav_dir, tmp, num_augments, train_percentage, augmentor
         )
 
+        lld_train, labels_train = file_system.new_lld_label_training_pair()
+
         for path in train_paths:
-            compile_file_to_llds_and_labels(path, file_system.lld_train_file,
-                                            file_system.labels_train_file)
+            compile_file_to_llds_and_labels(path, lld_train, labels_train)
 
         for path in aug_paths:
-            compile_file_to_llds_and_labels(path, file_system.lld_train_file,
-                                            file_system.labels_train_file)
+            compile_file_to_llds_and_labels(path, lld_train, labels_train)
 
         for path in test_paths:
             compile_file_to_llds_and_labels(path, file_system.lld_test_file,
@@ -155,14 +155,13 @@ def store_augments(origin_path: Path, augmentor: Augmenter, num_augments: int,
     return output_paths
 
 
-def compile_to_bow(llds: Path, labels: Path, target: Path, codebook: Path,
+def compile_to_bow(data: Tuple[Path, Path], target: Path, codebook: Path,
                    use_codebook: bool = False, memory: str = '12G') -> None:
     """
     Compiles a file of LLDS and their corresponding labels into a bag of words
     using openXBOW.
 
-    :param llds: The path to the LLD file
-    :param labels: The path to the labels file
+    :param data: A tuple of the LLD file and the labels file
     :param target: The location where the bag of words should be saved
     :param codebook: The location of the bag of words codebook
     :param use_codebook: If True, `codebook` should already exist and will be
@@ -173,6 +172,7 @@ def compile_to_bow(llds: Path, labels: Path, target: Path, codebook: Path,
     """
     ensure_download_exists(OPEN_XBOW_JAR, OPEN_XBOW_URL)
 
+    llds, labels = data
     codebook_flag = '-b' if use_codebook else '-B'
 
     openxbow_call = [

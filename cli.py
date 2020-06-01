@@ -91,7 +91,7 @@ if __name__ == '__main__':
                      'available actions.')
 
     if args.t:
-        if len(args.source) == 0:
+        if args.source is None:
             parser.error('-t requires at least one source')
         if args.wavs is None:
             parser.error('-t requires --wavs to be present')
@@ -116,24 +116,17 @@ if __name__ == '__main__':
     if args.x:
         if args.compiled is None:
             parser.error('-x requires --compiled to be present')
-        if not file_system.lld_train_file.exists():
-            parser.error(f'-x requires {file_system.lld_train_file} to exist')
-        if not file_system.lld_test_file.exists():
-            parser.error(f'-x requires {file_system.lld_test_file} to exist')
-        if not file_system.labels_train_file.exists():
-            parser.error(
-                f'-x requires {file_system.labels_train_file} to exist')
-        if not file_system.labels_test_file.exists():
-            parser.error(
-                f'-x requires {file_system.labels_test_file} to exist')
+
+        file_system.ensure_valid_lld_label_training_pairs()
+        file_system.ensure_valid_lld_label_test_pairs()
 
         from genre.compile import compile_to_bow
 
-        compile_to_bow(file_system.lld_train_file,
-                       file_system.labels_train_file,
+        compile_to_bow(file_system.lld_label_training_pairs[0],
                        file_system.xbow_train_file, file_system.codebook_file,
                        memory=args.memory)
-        compile_to_bow(file_system.lld_test_file, file_system.labels_test_file,
+        compile_to_bow((file_system.lld_test_file,
+                        file_system.labels_test_file),
                        file_system.xbow_test_file, file_system.codebook_file,
                        use_codebook=True, memory=args.memory)
 

@@ -5,7 +5,7 @@ Utility functions for streamlined-genre
 """
 from math import ceil
 from pathlib import Path
-from typing import List, Tuple
+from typing import Any, Callable, Iterable, List, Tuple
 
 import wget  # type: ignore
 
@@ -41,3 +41,19 @@ def split_list(lst: List, percentage: float) -> Tuple[List, List]:
     """
     split_point = ceil(len(lst) * percentage)
     return lst[:split_point], lst[split_point:]
+
+
+def first(iterable: Iterable, key: Callable[[Any], bool]) -> Any:
+    """
+    Finds the first element in `iterable` that satisfies `key`
+
+    :param iterable: The iterable to search
+    :param key: The function to check iterable with
+    :return: The first value that satisfies `key`
+
+    :raises ValueError: No element in `iterable` satisfies `key`
+    """
+    try:
+        return next(x for x in iterable if key(x))
+    except StopIteration:
+        raise ValueError('No element matched')
