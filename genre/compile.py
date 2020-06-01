@@ -75,17 +75,18 @@ def compile_to_llds(file_system: FileSystemConfig, num_augments: int,
             file_system.wav_dir, tmp, num_augments, train_percentage, augmentor
         )
 
-        lld_train, labels_train = file_system.new_lld_label_training_pair()
+        train_output_paths = file_system.new_lld_label_training_pair()
+        test_output_paths = (file_system.lld_test_file,
+                             file_system.labels_test_file)
 
         for path in train_paths:
-            compile_file_to_llds_and_labels(path, lld_train, labels_train)
+            compile_file_to_llds_and_labels(path, train_output_paths)
 
         for path in aug_paths:
-            compile_file_to_llds_and_labels(path, lld_train, labels_train)
+            compile_file_to_llds_and_labels(path, train_output_paths)
 
         for path in test_paths:
-            compile_file_to_llds_and_labels(path, file_system.lld_test_file,
-                                            file_system.labels_test_file)
+            compile_file_to_llds_and_labels(path, test_output_paths)
 
 
 def prepare_lld_paths(source: Path, tmp: Path, num_augments: int,
@@ -209,16 +210,18 @@ def augmentor_factory(keywords: Optional[List[str]] = None) -> Augmenter:
     return Sometimes(augmentors)
 
 
-def compile_file_to_llds_and_labels(path: Path, lld_file: Path,
-                                    label_file: Path) -> None:
+def compile_file_to_llds_and_labels(input_path: Path,
+                                    target_paths: Tuple[Path, Path]) -> None:
     """
-    :param path: The path to the original file
-    :param lld_file: The path to the output LLD file
-    :param label_file: The path to the label_file
+    :param input_path: The path to the original file
+    :param target_paths: A tuple of the path to the output LLD file and the
+                         path to the label file
     """
-    name, label = path.stem.split('__')
-    record_label(name, label, label_file)
-    extract_llds(path, lld_file, name)
+    lld_path, label_path = target_paths
+    name, label = input_path.stem.split('__')
+
+    record_label(name, label, label_path)
+    extract_llds(input_path, lld_path, name)
 
 
 def record_label(name: Any, label: Any, label_path: Path) -> None:
