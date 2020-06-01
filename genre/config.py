@@ -125,7 +125,7 @@ class FileSystemConfig:
     @property
     def labels_test_file(self) -> Path:
         """ The location of the test label file """
-        return self.compiled_dir / 'labels_train.csv'
+        return self.compiled_dir / 'labels_test.csv'
 
     @property
     def xbow_train_file(self) -> Path:
