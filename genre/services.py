@@ -93,8 +93,7 @@ def openxbow(input_data: Tuple[Path, Path], dest: Path, codebook: Path,
         '-l', str(labels),
         codebook_flag, str(codebook),
         append_arg,
-        standardize,
-        '-log'
+        standardize
     ]
 
     subprocess.run(args, check=True)
