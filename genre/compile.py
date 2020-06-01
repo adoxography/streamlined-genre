@@ -1,10 +1,7 @@
 """
 genre.compile
 
-Contains logic for extracting features from files:
-
- - From WAVs to LLDs using openSMILE
- - From LLDs to BOWs using openXBOW
+Contains logic for extracting LLD features from files
 """
 import random
 import shutil
@@ -22,7 +19,7 @@ from nlpaug.augmenter.audio import MaskAug, VtlpAug, SpeedAug  # type: ignore
 
 from genre.config import FileSystemConfig
 from genre.augment import BandpassAug
-from genre.util import ensure_download_exists, split_list, get_project_root
+from genre.util import split_list, get_project_root
 
 OPENSMILE_EXE = 'SMILExtract'
 
@@ -35,8 +32,6 @@ OPENSMILE_OPTIONS = [
     '-headercsvlld', '1'
 ]
 
-OPEN_XBOW_JAR = get_project_root() / 'lib' / 'openXBOW.jar'
-OPEN_XBOW_URL = 'https://github.com/openXBOW/openXBOW/blob/master/openXBOW.jar?raw=true'  # noqa
 
 # openXBOW requires this sampling rate
 SAMPLING_RATE = 22050
@@ -154,41 +149,6 @@ def store_augments(origin_path: Path, augmentor: Augmenter, num_augments: int,
         sf.write(output_path, augment, SAMPLING_RATE)
 
     return output_paths
-
-
-def compile_to_bow(data: Tuple[Path, Path], target: Path, codebook: Path,
-                   use_codebook: bool = False, memory: str = '12G') -> None:
-    """
-    Compiles a file of LLDS and their corresponding labels into a bag of words
-    using openXBOW.
-
-    :param data: A tuple of the LLD file and the labels file
-    :param target: The location where the bag of words should be saved
-    :param codebook: The location of the bag of words codebook
-    :param use_codebook: If True, `codebook` should already exist and will be
-                         used as a reference (i.e. will not be altered). If
-                         False, `codebook` does not have to exist and will be
-                         altered.
-    :param memory: The amount of memory to request for the JVM
-    """
-    ensure_download_exists(OPEN_XBOW_JAR, OPEN_XBOW_URL)
-
-    llds, labels = data
-    codebook_flag = '-b' if use_codebook else '-B'
-
-    openxbow_call = [
-        'java',
-        f'-Xmx{memory}',
-        '-jar', str(OPEN_XBOW_JAR),
-        '-i', str(llds),
-        '-o', str(target),
-        '-l', str(labels),
-        codebook_flag, str(codebook),
-        '' if use_codebook else '-standardizeInput',
-        '-log'
-    ]
-
-    subprocess.run(openxbow_call, check=True)
 
 
 def augmentor_factory(keywords: Optional[List[str]] = None) -> Augmenter:
