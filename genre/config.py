@@ -63,7 +63,7 @@ class FileSystemConfig:
 
             label_file = first(
                 label_files,
-                lambda path: str(path).split('_')[-1] == ident  # noqa pylint: disable=cell-var-from-loop
+                lambda path: path.stem.split('_')[-1] == ident  # noqa pylint: disable=cell-var-from-loop
             )
             pairs.append((lld_file, label_file))
 
