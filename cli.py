@@ -120,15 +120,15 @@ if __name__ == '__main__':
         file_system.ensure_valid_lld_label_training_pairs()
         file_system.ensure_valid_lld_label_test_pairs()
 
-        from genre.services import openxbow
+        from genre.compile import compile_to_bow
 
-        openxbow(file_system.lld_label_training_pairs[0],
-                 file_system.xbow_train_file, file_system.codebook_file,
-                 memory=args.memory)
-        openxbow((file_system.lld_test_file,
-                  file_system.labels_test_file),
-                 file_system.xbow_test_file, file_system.codebook_file,
-                 use_codebook=True, memory=args.memory)
+        compile_to_bow(file_system.lld_label_training_pairs,
+                       file_system.xbow_train_file, file_system.codebook_file,
+                       use_codebook=False, memory=args.memory)
+        compile_to_bow([(file_system.lld_test_file,
+                         file_system.labels_test_file)],
+                       file_system.xbow_test_file, file_system.codebook_file,
+                       use_codebook=True, memory=args.memory)
 
     if args.c:
         if args.compiled is None:

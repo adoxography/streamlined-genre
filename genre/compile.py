@@ -17,7 +17,7 @@ from nlpaug.augmenter.audio import MaskAug, VtlpAug, SpeedAug  # type: ignore
 
 from genre.augment import BandpassAug
 from genre.config import FileSystemConfig
-from genre.services import opensmile
+from genre.services import opensmile, openxbow
 from genre.util import split_list, get_project_root
 
 OPENSMILE_CONFIG_DIR = get_project_root() / 'config' / 'openSMILE'
@@ -30,6 +30,9 @@ COMPARE_OPTIONS = {
 
 # openXBOW requires this sampling rate
 SAMPLING_RATE = 22050
+
+TRAIN_MODE = 'train'
+TEST_MODE = 'test'
 
 # Available augmentors, along with their string keys
 AUGMENTORS = {
@@ -190,3 +193,24 @@ def record_label(name: Any, label: Any, label_path: Path) -> None:
     """
     with open(label_path, 'a') as label_file:
         label_file.write(f'{name};{label}\n')
+
+
+def compile_to_bow(data_pairs: List[Tuple[Path, Path]], dest: Path,
+                   codebook: Path, use_codebook: bool = False,
+                   memory: Optional[str] = None) -> None:
+    """
+    Compiles LLDs and labels to bags of words
+
+    :param data_pairs: A list of LLD and label files to compile
+    :param dest: The path to store the bag of words
+    :param codebook: The path to the codebook
+    :param use_codebook: If False, create the codebook on the first run instead
+                         of using it
+    :param memory: The amount of memory to reserve for the JVM
+    """
+    for pair in data_pairs:
+        openxbow(pair, dest, codebook,
+                 use_codebook=use_codebook, memory=memory)
+
+        # After the first openxbow run, the codebook will exist
+        use_codebook = True
