@@ -1,6 +1,6 @@
 # Downloaded files
-lib/*
-!lib/.gitkeep
+genre/lib/*
+!genre/lib/.gitkeep
 
 # Byte-compiled / optimized /DLL files
 __pycache__/
@@ -27,3 +27,6 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+
+# Log files
+smile.log

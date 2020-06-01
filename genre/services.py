@@ -12,10 +12,10 @@ import subprocess
 from pathlib import Path
 from typing import Optional, Tuple
 
-from genre.util import ensure_download_exists, flatten, get_project_root
+from genre.util import ensure_download_exists, flatten, get_lib_dir
 
 OPENSMILE_EXE = 'SMILExtract'
-OPEN_XBOW_JAR = get_project_root() / 'lib' / 'openXBOW.jar'
+OPEN_XBOW_JAR = get_lib_dir() / 'openXBOW.jar'
 OPEN_XBOW_URL = 'https://github.com/openXBOW/openXBOW/blob/master/openXBOW.jar?raw=true'  # noqa
 
 

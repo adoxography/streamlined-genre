@@ -53,6 +53,8 @@ setup(
     description=DESCRIPTION,
     python_requires=REQUIRES_PYTHON,
     packages=find_packages(),
+    package_data={'genre': ['config/openSMILE/*', 'config/openSMILE/shared/*', 'lib/*']},
+    include_package_data=True,
     license='GPL-3.0',
     keywords='nlp genre classification speech low-resource languages',
     url=URL,

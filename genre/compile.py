@@ -18,9 +18,9 @@ from nlpaug.augmenter.audio import MaskAug, VtlpAug, SpeedAug  # type: ignore
 from genre.augment import BandpassAug
 from genre.config import FileSystemConfig
 from genre.services import opensmile, openxbow
-from genre.util import split_list, get_project_root
+from genre.util import split_list, get_config_dir
 
-OPENSMILE_CONFIG_DIR = get_project_root() / 'config' / 'openSMILE'
+OPENSMILE_CONFIG_DIR = get_config_dir() / 'openSMILE'
 COMPARE_CONFIG = OPENSMILE_CONFIG_DIR / 'ComParE_2016.conf'
 COMPARE_OPTIONS = {
     'appendcsvlld': 1,
