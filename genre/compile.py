@@ -3,6 +3,7 @@ genre.compile
 
 Contains logic for extracting LLD features from files
 """
+import logging
 import random
 from itertools import count
 from pathlib import Path
@@ -178,9 +179,13 @@ def compile_file_to_llds_and_labels(input_path: Path,
     lld_path, label_path = target_paths
     name, label = input_path.stem.split('__')
 
+    logging.info('Compiling %s to LLDs...', input_path)
+
     record_label(name, label, label_path)
     opensmile(input_path, lld_path, name,
               config=COMPARE_CONFIG, options=COMPARE_OPTIONS)
+
+    logging.info('%s compiled to LLDs', input_path)
 
 
 def record_label(name: Any, label: Any, label_path: Path) -> None:

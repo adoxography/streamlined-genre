@@ -2,6 +2,7 @@
 """
 Command line interface into the streamlined-genre library
 """
+import logging
 import random
 from pathlib import Path
 from argparse import ArgumentParser
@@ -10,6 +11,10 @@ from genre.config import FileSystemConfig
 
 
 parser = ArgumentParser(description='')
+
+parser.add_argument('--log',
+                    type=Path,
+                    help='The file to store logging information')
 
 action_group = parser.add_argument_group(
     'actions', 'At least one of these must be present. Can be combined; e.g. '
@@ -89,6 +94,9 @@ if __name__ == '__main__':
         parser.error('At least one action (-t, -e, -x, -c) must be specified. '
                      'Run this command with -h for more information on '
                      'available actions.')
+
+    if args.log:
+        logging.basicConfig(filename=args.log, level=logging.DEBUG)
 
     if args.t:
         if args.source is None:
