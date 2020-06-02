@@ -4,6 +4,7 @@ genre.extract
 Handles extraction of data from ELAR directories
 """
 import csv
+import logging
 import subprocess
 import itertools
 from typing import Any, Iterator, List, Tuple
@@ -13,6 +14,8 @@ from pathlib import Path
 TITLE_COL = 0
 WAV_COL = 2
 LABEL_COL = 4
+
+logger = logging.getLogger('streamlined-genre')
 
 
 def extract_from_elar_dirs(sources: List[Path], dest: Path) -> None:
@@ -44,7 +47,11 @@ def process_source(source: Path, dest: Path, index_iter: Iterator) -> None:
     :param dest: A directory to store all of the extracted sound files
     :param index_iter: A generator that produces a unique key
     """
-    with open(elar_manifest(source), encoding='utf-8-sig') as manifest:
+    manifest_path = elar_manifest(source)
+
+    logger.info('Processing %s', manifest_path)
+
+    with open(manifest_path, encoding='utf-8-sig') as manifest:
         bundles_dir = source / 'Bundles'
 
         for row in csv.reader(manifest):
@@ -57,6 +64,8 @@ def process_source(source: Path, dest: Path, index_iter: Iterator) -> None:
             dest_wav_loc = dest / dest_name
 
             convert_to_wav(sph_loc, dest_wav_loc)
+
+    logger.info('Finished processing %s', manifest_path)
 
 
 def elar_manifest(path: Path) -> Path:
@@ -120,6 +129,8 @@ def convert_to_wav(orig: Path, dest: Path) -> None:
     :param orig: The path to the input to sound file
     :param dest: The path to where the WAV file should be saved
     """
+    logger.info('Converting %s to %s', orig, dest)
+
     sox_call: List[str] = [
         'sox',
         str(orig),

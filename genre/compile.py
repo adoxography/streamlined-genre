@@ -131,7 +131,12 @@ def store_augments(origin_path: Path, augmenter: Augmenter, num_augments: int,
     :param output_dir: The directory to store the augmented files
     :return: A list of file paths for the augments that were created
     """
+    logger.info('Loading %s for augmentation', origin_path)
+
     audio_data, _ = librosa.load(origin_path)
+
+    logger.info('Augmenting %s', origin_path)
+
     augments = augmenter.augment(audio_data, n=num_augments)
 
     if num_augments == 1:
@@ -214,6 +219,8 @@ def compile_to_bow(data_pairs: List[Tuple[Path, Path]], dest: Path,
     :param memory: The amount of memory to reserve for the JVM
     """
     for pair in data_pairs:
+        logger.info('Compiling %s and %s to BoAW', *pair)
+
         openxbow(pair, dest, codebook,
                  use_codebook=use_codebook, memory=memory)
 
