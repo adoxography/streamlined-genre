@@ -8,6 +8,7 @@ from pathlib import Path
 
 
 logger = logging.getLogger('streamlined-genre')
+logger.setLevel(logging.INFO)
 
 
 def create_handler(path: Path) -> logging.FileHandler:
