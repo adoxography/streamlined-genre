@@ -23,7 +23,7 @@ def classify_bows(train_data: Path, test_data: Path) -> Tuple[float, float]:
     inputs_train, targets_train = load_data(train_data)
     inputs_test, targets_test = load_data(test_data)
 
-    clf = Classifier(random_state=0)
+    clf = Classifier(random_state=0, max_iter=10000)
     clf.fit(inputs_train, targets_train)
 
     train_accuracy = evaluate_classifier(clf, inputs_train, targets_train)
