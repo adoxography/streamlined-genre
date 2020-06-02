@@ -46,6 +46,8 @@ def opensmile(source: Path, dest: Path, name: str,
         str(OPENSMILE_EXE),
         *config_args,
         *option_args,
+        '-appendLogfile',
+        '-noconsoleoutput',
         '-inputfile', str(source),
         '-lldcsvoutput', str(dest),
         '-instname', name
