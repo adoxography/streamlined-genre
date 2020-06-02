@@ -2,13 +2,12 @@
 """
 Command line interface into the streamlined-genre library
 """
-import logging
 import random
 from pathlib import Path
 from argparse import ArgumentParser
 
 from genre.config import FileSystemConfig
-
+from genre.logging import create_handler, logger
 
 parser = ArgumentParser(description='')
 
@@ -96,7 +95,8 @@ if __name__ == '__main__':
                      'available actions.')
 
     if args.log:
-        logging.basicConfig(filename=args.log, level=logging.DEBUG)
+        handler = create_handler(args.log)
+        logger.addHandler(handler)
 
     if args.t:
         if args.source is None:
