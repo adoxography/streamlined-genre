@@ -97,7 +97,7 @@ def prepare_lld_paths(source: Path, tmp: Path, num_augments: int,
     :return: A list of lists of paths to WAV files for LLD creation. The last
              member is the test group.
     """
-    sample_paths = list(source.iterdir())
+    sample_paths = [path for path in source.iterdir() if path.suffix == '.wav']
     random.shuffle(sample_paths)
 
     train_samples, test_samples = split_list(sample_paths, train_percentage)
