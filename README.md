@@ -36,7 +36,13 @@ If you're developing `streamlined-genre`, you might want to install it with the 
 └── {LANGUAGE}_ELAR_Directory.csv
 ```
 
-For each instance, `{LANGUAGE}_ELAR_Directory.csv` should contain a row where {RECORDING_TITLE} is the first column, {AUDIO_FILE} is the third column, and the label for the instance is the fifth column. Audio files may be in `wav` or `sph` format.
+`{LANGUAGE}_ELAR_Directory.csv` should be structured as follows, where `{LABEL}` is the instance's genre label. Audio files may be in `wav` or `sph` format.
+
+```csv
+...
+{RECORDING_TITLE},...,{AUDIO_FILE},...{LABEL}
+...
+```
 
 #### Non-ELAR
 `streamlined-genre` can also work with arbitrary `wav` files. The files should be in the same folder and be named `{IDENTIFIER}__{LABEL}.wav` (where `{IDENTIFIER}` is unique across all samples).
