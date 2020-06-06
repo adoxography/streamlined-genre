@@ -151,6 +151,7 @@ def store_augments(origin_path: Path, augmenter: Augmenter, num_augments: int,
         output_path = output_dir / f'{identifier}__{label}.wav'
         output_paths.append(output_path)
         sf.write(output_path, augment, SAMPLING_RATE)
+        logger.info('"%s" written to disk', output_path)
 
     return output_paths
 
