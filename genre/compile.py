@@ -10,6 +10,7 @@ from tempfile import TemporaryDirectory
 from typing import Any, Iterator, List, Optional, Tuple
 
 import librosa  # type: ignore
+from librosa.util.exceptions import ParameterError  # type: ignore
 import soundfile as sf  # type: ignore
 from nlpaug import Augmenter  # type: ignore
 from nlpaug.flow import Sometimes  # type: ignore
@@ -31,6 +32,8 @@ COMPARE_OPTIONS = {
 
 # openXBOW requires this sampling rate
 SAMPLING_RATE = 22050
+
+MAX_ATTEMPTS = 3
 
 TRAIN_MODE = 'train'
 TEST_MODE = 'test'
@@ -130,6 +133,9 @@ def store_augments(origin_path: Path, augmenter: Augmenter, num_augments: int,
                             for the file name
     :param output_dir: The directory to store the augmented files
     :return: A list of file paths for the augments that were created
+
+    :raise ParameterError: `MAX_ATTEMPTS` ParameterErrors are raised in a row
+                           while attempting to augment
     """
     logger.info('Loading %s for augmentation', origin_path)
 
@@ -137,7 +143,20 @@ def store_augments(origin_path: Path, augmenter: Augmenter, num_augments: int,
 
     logger.info('Augmenting %s', origin_path)
 
-    augments = augmenter.augment(audio_data, n=num_augments)
+    attempts = 0
+    augments = None
+
+    while augments is None:
+        try:
+            attempts += 1
+            augments = augmenter.augment(audio_data, n=num_augments)
+        except ParameterError:
+            logger.info(
+                'Error encountered while augmenting "%s"; trying again.',
+                origin_path
+            )
+            if attempts >= MAX_ATTEMPTS:
+                raise
 
     if num_augments == 1:
         # nlpaug.Augmenter doesn't return a list if n=1
