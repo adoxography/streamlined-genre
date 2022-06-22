@@ -15,7 +15,7 @@ REQUIRED = [
     'liac-arff==2.4.0',
     'librosa==0.7.2',
     'nlpaug==0.0.14',
-    'numpy==1.18.4',
+    'numpy==1.22.0',
     'scipy==1.4.1',
     'sklearn==0.0',
     'wget==3.2'
