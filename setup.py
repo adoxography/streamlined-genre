@@ -16,7 +16,7 @@ REQUIRED = [
     'librosa==0.7.2',
     'nlpaug==0.0.14',
     'numpy==1.18.4',
-    'scipy==1.4.1',
+    'scipy==1.10.0',
     'sklearn==0.0',
     'wget==3.2'
 ]
